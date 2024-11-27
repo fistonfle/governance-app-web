@@ -33,13 +33,13 @@ const Header = () => {
           )}
 
           {/* Direct Category Links */}
-          <Link to="/posts/trending" className="hover:text-yellow-300">
+          <Link to="/tag/trending" className="hover:text-yellow-300">
             Trending
           </Link>
-          <Link to="/posts/new" className="hover:text-yellow-300">
+          <Link to="/tag/new" className="hover:text-yellow-300">
             New
           </Link>
-          <Link to="/posts/discussed" className="hover:text-yellow-300">
+          <Link to="/tag/most-discussed" className="hover:text-yellow-300">
             Most Discussed
           </Link>
 

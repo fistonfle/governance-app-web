@@ -1,85 +1,102 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { createPost } from "../features/postsSlice"; // Import the createPost action
-import { useNavigate } from "react-router-dom";
-import { FaSpinner } from "react-icons/fa"; // Import spinner icon for loading
+import { useDispatch, useSelector } from "react-redux";
+import { createPost, updatePost, fetchPostById } from "../features/postsSlice"; // Import actions
+import { useNavigate, useParams } from "react-router-dom";
+import { FaSpinner } from "react-icons/fa";
 
-const CreatePost = () => {
+const PostForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { id } = useParams(); // Get post ID from URL if editing
+  const isEdit = Boolean(id); // Determine if it's edit mode based on the presence of an ID
+
   const [post, setPost] = useState({
     title: "",
     content: "",
-    tags: [], // This will store the selected tags
-    trending: false, // The 'trending' flag for the post
-    userId: "", // The user ID that will be included in the post
+    tags: [],
+    trending: false,
+    userId: "",
   });
-  const [loading, setLoading] = useState(false); // Loading state
-  const [successMessage, setSuccessMessage] = useState(""); // Success message
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // State to track authentication
+
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  const { user } = useSelector((state) => state.auth); // Get the logged-in user
+  const { currentPost } = useSelector((state) => state.posts); // Get the current post for editing
 
   useEffect(() => {
-    // Check if the user is authenticated (e.g., check for a token in localStorage or Redux state)
-    const token = localStorage.getItem("token"); // Replace with your authentication method
-    const userId = localStorage.getItem("userId"); // Assuming userId is stored in localStorage
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
 
     if (!token || !userId) {
-      setIsAuthenticated(false); // User is not authenticated
-      navigate("/login"); // Redirect to login page
+      setIsAuthenticated(false);
+      navigate("/login");
     } else {
-      setPost((prevPost) => ({ ...prevPost, userId })); // Set the userId if authenticated
+      setPost((prevPost) => ({ ...prevPost, userId })); // Set userId for new post
     }
-  }, [navigate]);
+
+    // If editing, fetch the post details
+    if (isEdit) {
+      dispatch(fetchPostById(id));
+    }
+  }, [id, isEdit, dispatch, navigate]);
+
+  useEffect(() => {
+    // Populate the form with the post data if editing
+    if (currentPost && isEdit) {
+      setPost(currentPost);
+    }
+  }, [currentPost, isEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Show loader
+    setLoading(true);
     try {
-      // Dispatch the createPost action to create a new post
-      await dispatch(createPost(post)).unwrap();
-      setSuccessMessage("Post created successfully!");
-      // Navigate to the posts page after successful creation
+      if (isEdit) {
+        // Update post if in edit mode
+        await dispatch(updatePost({ id, post })).unwrap();
+        setSuccessMessage("Post updated successfully!");
+      } else {
+        // Create new post
+        await dispatch(createPost(post)).unwrap();
+        setSuccessMessage("Post created successfully!");
+      }
+
       navigate("/posts");
     } catch (error) {
-      setSuccessMessage("Error creating post. Please try again.");
+      setSuccessMessage("Error saving post. Please try again.");
     } finally {
-      setLoading(false); // Hide loader
+      setLoading(false);
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPost((prevPost) => ({
-      ...prevPost,
-      [name]: value,
-    }));
+    setPost((prevPost) => ({ ...prevPost, [name]: value }));
   };
 
   const handleTagChange = (tag) => {
-    setPost((prevPost) => {
-      // Toggle the selected tag
-      const tags = prevPost.tags.includes(tag)
-        ? prevPost.tags.filter((t) => t !== tag)
-        : [...prevPost.tags, tag];
-      return { ...prevPost, tags };
-    });
-  };
-
-  const handleTrendingChange = () => {
     setPost((prevPost) => ({
       ...prevPost,
-      trending: !prevPost.trending,
+      tags: prevPost.tags.includes(tag)
+        ? prevPost.tags.filter((t) => t !== tag)
+        : [...prevPost.tags, tag],
     }));
   };
 
+  const handleTrendingChange = () => {
+    setPost((prevPost) => ({ ...prevPost, trending: !prevPost.trending }));
+  };
+
   if (!isAuthenticated) {
-    return null; // This will ensure the component doesn't render if not authenticated
+    return null;
   }
 
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-semibold text-center mb-6">
-        Create a New Post
+        {isEdit ? "Edit Post" : "Create a New Post"}
       </h1>
       <form
         onSubmit={handleSubmit}
@@ -120,7 +137,7 @@ const CreatePost = () => {
         <div className="mb-6">
           <label className="block text-lg font-medium mb-2">Tags</label>
           <div className="flex gap-4">
-            {["new", "trending", "most discussed"].map((tag) => (
+            {["new", "trending", "most-discussed"].map((tag) => (
               <button
                 key={tag}
                 type="button"
@@ -149,7 +166,6 @@ const CreatePost = () => {
           </label>
         </div>
 
-        {/* Success or error message */}
         {successMessage && (
           <div
             className={`p-4 mb-4 text-center rounded-lg ${
@@ -163,10 +179,10 @@ const CreatePost = () => {
         <div className="flex justify-between items-center">
           <button
             type="submit"
-            disabled={loading} // Disable button while loading
+            disabled={loading}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
           >
-            {loading ? <FaSpinner className="animate-spin" /> : "Submit Post"}
+            {loading ? <FaSpinner className="animate-spin" /> : "Save Post"}
           </button>
         </div>
       </form>
@@ -174,4 +190,4 @@ const CreatePost = () => {
   );
 };
 
-export default CreatePost;
+export default PostForm;

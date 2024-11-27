@@ -17,7 +17,7 @@ const Login = () => {
     const action = await dispatch(login(credentials));
     // Check if login was successful
     if (action.meta.requestStatus === "fulfilled") {
-      navigate("/posts"); // Redirect to posts page
+      navigate("/my-posts"); // Redirect to posts page
     }
   };
 

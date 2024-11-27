@@ -8,6 +8,7 @@ import About from "./pages/About";
 import PostsListPage from "./pages/PostsListPage";
 import PostPage from "./pages/PostPage";
 import PostsPage from "./pages/PostsPage";
+import HashtagPage from "./pages/HashTagPost";
 
 const App = () => {
   return (
@@ -15,13 +16,14 @@ const App = () => {
       <Header />
       <Routes>
         <Route path="/" element={<PostsListPage />} />
+        <Route path="/tag/:hashtag" element={<HashtagPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/my-posts" element={<PostsPage />} />{" "}
         {/* Updated to 'element' */}
         <Route path="/posts/:postId" element={<PostPage />} />{" "}
         {/* Updated to 'element' */}
-        <Route path="/posts/edit/:postId" element={<PostPage />} />{" "}
+        <Route path="/posts/edit-post/:id" element={<CreatePost />} />{" "}
         {/* Updated to 'element' */}
         <Route path="about" element={<About />} />
         <Route path="/create-post" element={<CreatePost />} />
