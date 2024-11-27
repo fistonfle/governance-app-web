@@ -127,7 +127,7 @@ const SinglePostPage = () => {
           ) : (
             currentPost.comments?.map((comment) => (
               <div key={comment.id} className="p-4 bg-gray-100 mb-4 rounded-lg">
-                <p className="font-semibold">{comment.author}</p>
+                <p className="font-semibold">{comment.username}</p>
                 <p className="text-gray-600">{comment.content}</p>
               </div>
             ))
